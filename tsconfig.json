@@ -2,18 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "noImplicitAny": false,
-    "sourceMap": true,
-    "outDir": "./lib/",
-    "target": "ESNEXT",
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "sourceMap": false,
+    "strict": false,
+    "outDir": "dist",
+    "target": "ES5",
+    "lib": ["ESNext"],
+    "removeComments": true,
+    "typeRoots": ["./node_modules/@types"]
   },
-  "lib": [
-    "es2016"
-  ],
-  "exclude": [
-    "./node_modules",
-    "./typings"
-  ]
+  "exclude": ["./node_modules", "./typings"]
 }
