@@ -1,7 +1,7 @@
 import * as request from 'request';
 import { MemoryTypes } from './process/process.interfaces';
 
-export const getOffsets = async (): Promise<typeof offsets> => {
+export const getOffsets = async (): Promise<typeof localOffsets> => {
   const url = 'https://raw.githubusercontent.com/frk1/hazedumper/master/csgo.json';
 
   return new Promise((res, rej) => {
@@ -21,7 +21,8 @@ export const getOffsets = async (): Promise<typeof offsets> => {
   });
 };
 
-export const offsets = {
+// This is only here for typing
+const localOffsets = {
   timestamp: 1608284679,
   signatures: {
     anim_overlays: 10624,

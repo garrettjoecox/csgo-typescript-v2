@@ -4,7 +4,6 @@ import { ClientStateService } from './game/clientState/clientState.service';
 import { EntityBase } from './game/entity/entity.service';
 import { Player } from './game/player/player';
 import { RendererService } from './game/renderer/renderer.service';
-import { offsets } from './offsets';
 import { ProcessService } from './process/process.service';
 import { Global } from './shared/declerations';
 
@@ -49,10 +48,10 @@ export class BaseService {
     Global.wpm = processService.writeMemory.bind(proc);
     Global.wbf = processService.writeBuffer.bind(proc);
 
-    Global.clientState = new ClientStateService(offsets);
-    Global.entityBase = new EntityBase(offsets);
-    Global.renderer = new RendererService(offsets);
-    Global.player = new Player(offsets);
+    Global.clientState = new ClientStateService(this.config.offsets);
+    Global.entityBase = new EntityBase(this.config.offsets);
+    Global.renderer = new RendererService(this.config.offsets);
+    Global.player = new Player(this.config.offsets);
   }
 
   private doRun() {
