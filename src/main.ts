@@ -8,10 +8,6 @@ import { Global } from './shared/declerations';
 getOffsets()
   .then((offsets) => {
     const base: BaseService = new BaseService({
-      webSocketService: {
-        start: false,
-        socketServicePort: 8080,
-      },
       offsets,
     });
 
