@@ -2,8 +2,8 @@
   "name": "external-go-v2",
   "version": "1.0.0",
   "description": "external csgo ts base v2 by xsip",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/main.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "start": "node dist/main.js",
     "build": "tsc && pkg dist/main.js --targets=node12-win-x64",
@@ -18,8 +18,7 @@
     "memoryjs": "github:matteofumagalli1275/memoryjs#node13",
     "node-gyp": "^7.1.2",
     "request": "^2.88.2",
-    "rxjs": "^6.6.3",
-    "simple-vdf": "^1.1.1"
+    "rxjs": "^6.6.3"
   },
   "devDependencies": {
     "@types/node": "^13.1.4",

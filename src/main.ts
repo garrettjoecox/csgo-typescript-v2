@@ -1,16 +1,11 @@
-import * as fs from 'fs';
 import * as iohook from 'iohook';
-import * as path from 'path';
 import { filter } from 'rxjs/operators';
-import * as vdf from 'simple-vdf';
 import { BaseService } from './base.service';
 import { PlayerEntity } from './game/entity/entity.interfaces';
 import { getOffsets } from './offsets';
 import { MemoryTypes } from './process/process.interfaces';
 import { Global } from './shared/declerations';
-
-const weaponsVdf = fs.readFileSync(path.resolve(__dirname, 'weapons.vdf'), 'utf8');
-const weapons = vdf.parse(weaponsVdf);
+import { weapons } from './weapons';
 
 const keyPressedMap: { [key: number]: boolean } = {};
 const isKeyPressed = (key: number): boolean => !!keyPressedMap[key];
@@ -56,10 +51,10 @@ getOffsets()
         const currentPenalty =
           // @ts-ignore
           data.localEntity.weaponEntity.weaponEntityBase.m_fAccuracyPenalty(MemoryTypes.float) * 1000;
-        const weaponConfig = weapons[`weapon_${data.localEntity.weaponEntity.name}_prefab`];
+        const weaponConfig = weapons.find((w) => w.name === data.localEntity.weaponEntity.name);
         if (data.localEntity.team !== data.localEntity.crosshairEntity.team) {
           if (weaponConfig) {
-            const basePenalty = parseFloat(weaponConfig.attributes['inaccuracy stand alt']);
+            const basePenalty = weaponConfig.inaccuracyAlt;
             if (currentPenalty <= basePenalty * 1.1) {
               data.player.attack();
               setTimeout(() => {
