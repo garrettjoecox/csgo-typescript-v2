@@ -1,6 +1,6 @@
 {
   "ignore": ["node_modules"],
   "watch": ["src", "package-lock.json"],
-  "exec": "ts-node src/main.ts",
+  "exec": "ts-node src/index.ts",
   "ext": "ts"
 }

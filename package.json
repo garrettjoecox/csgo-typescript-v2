@@ -1,12 +1,12 @@
 {
-  "name": "external-go-v2",
+  "name": "csgo",
   "version": "1.0.0",
-  "description": "external csgo ts base v2 by xsip",
+  "description": "External CSGO hacks in Typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "node dist/main.js",
-    "build": "ncc build src/main.ts -o dist && pkg . --targets=node12-win-x64 --output node.exe",
+    "start": "node dist/index.js",
+    "build": "ncc build src/index.ts -o dist && pkg . --targets=node12-win-x64",
     "dev": "nodemon",
     "lint": "eslint .",
     "type-check": "tsc --pretty --noEmit"
@@ -23,10 +23,7 @@
   "license": "ISC",
   "dependencies": {
     "iohook": "^0.7.2",
-    "memoryjs": "github:matteofumagalli1275/memoryjs#node13",
-    "node-gyp": "^7.1.2",
-    "request": "^2.88.2",
-    "rxjs": "^6.6.3"
+    "memoryjs": "github:matteofumagalli1275/memoryjs#node13"
   },
   "devDependencies": {
     "@types/node": "^13.1.4",
