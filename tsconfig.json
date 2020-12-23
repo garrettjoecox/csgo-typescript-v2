@@ -5,7 +5,8 @@
     "sourceMap": false,
     "strict": false,
     "outDir": "dist",
-    "target": "ES5",
+    "target": "ES2015",
+    "moduleResolution": "Node",
     "lib": ["ESNext"],
     "removeComments": true,
     "typeRoots": ["./node_modules/@types"]

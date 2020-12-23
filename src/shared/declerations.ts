@@ -60,7 +60,7 @@ export class Global {
   };
 }
 
-process.title = 'External Cs go!';
+process.title = 'UR MUM';
 
 export enum WeaponIndex {
   WEAPON_DEAGLE = 1,
