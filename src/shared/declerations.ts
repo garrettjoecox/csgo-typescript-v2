@@ -68,7 +68,7 @@ export enum WeaponIndex {
   WEAPON_FIVESEVEN = 3,
   WEAPON_GLOCK = 4,
   WEAPON_AK47 = 7,
-  WEAPON_AUG = 8,
+  WEAPON_AUG = 262152,
   WEAPON_AWP = 9,
   WEAPON_FAMAS = 10,
   WEAPON_G3SG1 = 11,

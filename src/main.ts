@@ -1,9 +1,32 @@
+import * as fs from 'fs';
+import * as iohook from 'iohook';
+import * as path from 'path';
 import { filter } from 'rxjs/operators';
+import * as vdf from 'simple-vdf';
 import { BaseService } from './base.service';
 import { PlayerEntity } from './game/entity/entity.interfaces';
 import { getOffsets } from './offsets';
 import { MemoryTypes } from './process/process.interfaces';
 import { Global } from './shared/declerations';
+
+const weaponsVdf = fs.readFileSync(path.resolve(__dirname, 'weapons.vdf'), 'utf8');
+const weapons = vdf.parse(weaponsVdf);
+
+const keyPressedMap: { [key: number]: boolean } = {};
+const isKeyPressed = (key: number): boolean => !!keyPressedMap[key];
+iohook.on('mousedown', ({ button }: { button: number }) => {
+  keyPressedMap[button] = true;
+});
+iohook.on('mouseup', ({ button }: { button: number }) => {
+  keyPressedMap[button] = false;
+});
+iohook.on('keydown', ({ keycode }: { keycode: number }) => {
+  keyPressedMap[keycode] = true;
+});
+iohook.on('keyup', ({ keycode }: { keycode: number }) => {
+  keyPressedMap[keycode] = false;
+});
+iohook.start();
 
 getOffsets()
   .then((offsets) => {
@@ -13,9 +36,61 @@ getOffsets()
 
     base.run();
 
+    // BHOP
     base
       .onNewData()
-      .pipe(filter((d) => d.currentEntity.lifeState === 0 && d.currentEntity.team === 3))
+      .pipe(filter(() => isKeyPressed(57)))
+      .subscribe((data) => {
+        const playerJumpState = data.localEntity.read(offsets.netvars.m_fFlags, MemoryTypes.int);
+
+        if (playerJumpState === 257) {
+          Global.player.jump();
+        }
+      });
+
+    // Triggerbot
+    base
+      .onNewData()
+      .pipe(filter((d) => isKeyPressed(56) && !!d.localEntity.crosshairEntity))
+      .subscribe((data) => {
+        const currentPenalty =
+          // @ts-ignore
+          data.localEntity.weaponEntity.weaponEntityBase.m_fAccuracyPenalty(MemoryTypes.float) * 1000;
+        const weaponConfig = weapons[`weapon_${data.localEntity.weaponEntity.name}_prefab`];
+        if (data.localEntity.team !== data.localEntity.crosshairEntity.team) {
+          if (weaponConfig) {
+            const basePenalty = parseFloat(weaponConfig.attributes['inaccuracy stand alt']);
+            if (currentPenalty <= basePenalty * 1.1) {
+              data.player.attack();
+              setTimeout(() => {
+                data.player.attack();
+              }, 100);
+            } else if (currentPenalty < basePenalty * 1.5) {
+              data.player.attack();
+            }
+          } else {
+            data.player.attack();
+          }
+        }
+      });
+
+    // Radar
+    base
+      .onNewData()
+      .pipe(
+        filter((d) => isKeyPressed(5) && d.currentEntity.lifeState === 0 && d.currentEntity.team !== d.localEntity.team)
+      )
+      .subscribe((data) => {
+        const entity: PlayerEntity = data.currentEntity;
+        entity.write(offsets.netvars.m_bSpotted, 1, MemoryTypes.int);
+      });
+
+    // Glow
+    base
+      .onNewData()
+      .pipe(
+        filter((d) => isKeyPressed(5) && d.currentEntity.lifeState === 0 && d.currentEntity.team !== d.localEntity.team)
+      )
       .subscribe((data) => {
         const entity: PlayerEntity = data.currentEntity;
         const glowIndex: number = entity.read(offsets.netvars.m_iGlowIndex, MemoryTypes.uint32);

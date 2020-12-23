@@ -8,5 +8,8 @@
     "es6": true
   },
   "ignorePatterns": ["dist", "lib"],
-  "rules": {}
+  "rules": {
+    "class-methods-use-this": "off",
+    "import/prefer-default-export": "off"
+  }
 }
