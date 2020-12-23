@@ -1,10 +1,10 @@
-import {OffsetCollection} from '../../offsets';
-import {MemoryTypes} from '../../process/process.interfaces';
-import {Global} from '../../shared/declerations';
+import { OffsetCollection } from '../../offsets';
+import { MemoryTypes } from '../../process/process.interfaces';
+import { Global } from '../../shared/declerations';
 
 export class Player {
-
   private canDoCollection: Record<string, boolean> = {};
+
   constructor(private offsets: OffsetCollection) {
     console.log('player init');
   }
@@ -20,7 +20,6 @@ export class Player {
   attack2(): void {
     this.performAction(this.offsets.signatures.dwForceAttack2);
   }
-
 
   private panoramaBase = () => Global.gM('client.dll').modBaseAddr;
 

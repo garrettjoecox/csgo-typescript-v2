@@ -2,14 +2,22 @@
   "name": "external-go-v2",
   "version": "1.0.0",
   "description": "external csgo ts base v2 by xsip",
-  "main": "dist/main.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "start": "node dist/main.js",
-    "build": "tsc && pkg dist/main.js --targets=node12-win-x64",
+    "build": "ncc build src/main.ts -o dist && pkg . --targets=node12-win-x64 --output node.exe",
     "dev": "nodemon",
     "lint": "eslint .",
     "type-check": "tsc --pretty --noEmit"
+  },
+  "bin": "dist/index.js",
+  "pkg": {
+    "assets": [
+      "dist\\build\\Release\\memoryjs.node",
+      "dist\\builds\\node-v72-win32-x64\\build\\Release\\iohook.node",
+      "dist\\builds\\node-v72-win32-x64\\build\\Release\\uiohook.dll"
+    ]
   },
   "author": "",
   "license": "ISC",
@@ -23,12 +31,13 @@
   "devDependencies": {
     "@types/node": "^13.1.4",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
+    "@vercel/ncc": "^0.26.1",
     "eslint": "^7.16.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-import": "^2.22.1",
     "nodemon": "^2.0.6",
-    "pkg": "^4.4.9",
+    "pkg": "github:kkoomen/pkg",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
   }
