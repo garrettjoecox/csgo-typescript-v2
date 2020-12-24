@@ -15,17 +15,19 @@
   "pkg": {
     "assets": [
       "dist\\build\\Release\\memoryjs.node",
-      "dist\\builds\\node-v72-win32-x64\\build\\Release\\iohook.node",
-      "dist\\builds\\node-v72-win32-x64\\build\\Release\\uiohook.dll"
+      "dist\\build\\Release\\asynckeystate.node"
     ]
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "iohook": "^0.7.2",
+    "asynckeystate": "0.0.5",
+    "axios": "^0.21.1",
+    "lodash": "^4.17.20",
     "memoryjs": "github:matteofumagalli1275/memoryjs#node13"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.166",
     "@types/node": "^13.1.4",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "@vercel/ncc": "^0.26.1",

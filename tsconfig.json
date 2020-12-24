@@ -9,7 +9,7 @@
     "moduleResolution": "Node",
     "lib": ["ESNext"],
     "removeComments": true,
-    "typeRoots": ["./node_modules/@types", "./typings"]
+    "typeRoots": ["./node_modules/@types", "@types"]
   },
-  "exclude": ["./node_modules", "./typings"]
+  "exclude": ["./node_modules"]
 }
