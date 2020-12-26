@@ -1,5 +1,5 @@
 import * as aks from 'asynckeystate';
-import { memoize, throttle } from 'lodash';
+import { throttle } from 'lodash';
 import { getActiveProcessName } from 'windows-active-process';
 import OffsetHandle from './OffsetHandle';
 import { Offsets } from './offsets';
@@ -52,11 +52,7 @@ export default class Hack extends Runnable {
     super.start();
   }
 
-  getPlayersInternal = () => {
-    setTimeout(() => {
-      this.getPlayers.cache.clear();
-    }, 5000);
-
+  getPlayers = () => {
     const players: {
       enemy: Player[];
       friendly: Player[];
@@ -67,14 +63,15 @@ export default class Hack extends Runnable {
 
     const selfIndex = this.clientStateHandle.read(this.offsets.signatures.dwClientState_GetLocalPlayer, MemoryType.int);
     const maxEntity = this.clientStateHandle.read(this.offsets.signatures.dwClientState_MaxPlayer, MemoryType.int);
+    const self = new Player(this, selfIndex);
     for (let entityIndex = 0; entityIndex < maxEntity; entityIndex += 1) {
       const entity = new Player(this, entityIndex);
       if (entityIndex === selfIndex) continue;
 
       if (entity.m_lifeState === 0 && entity.m_bDormant === 0 && entity.m_iHealth > 0) {
-        if (entity.m_iTeamNum === 2) {
+        if (entity.m_iTeamNum === self.m_iTeamNum) {
           players.friendly.push(entity);
-        } else if (entity.m_iTeamNum === 3) {
+        } else {
           players.enemy.push(entity);
         }
       }
@@ -83,19 +80,11 @@ export default class Hack extends Runnable {
     return players;
   };
 
-  getPlayers = memoize(this.getPlayersInternal);
-
-  getSelfInternal = () => {
-    setTimeout(() => {
-      this.getSelf.cache.clear();
-    }, 5000);
-
+  getSelf = () => {
     const selfIndex = this.clientStateHandle.read(this.offsets.signatures.dwClientState_GetLocalPlayer, MemoryType.int);
 
     return new Player(this, selfIndex);
   };
-
-  getSelf = memoize(this.getSelfInternal);
 
   attack = throttle(() => {
     this.clientHandle.write(this.offsets.signatures.dwForceAttack, 5, MemoryType.int);
@@ -141,8 +130,8 @@ export default class Hack extends Runnable {
     players.enemy.forEach((player) => {
       const glowIndex = player.m_iGlowIndex;
 
-      this.processHandle.write(glowManager + glowIndex * 0x38 + 0x4, 0, MemoryType.float);
-      this.processHandle.write(glowManager + glowIndex * 0x38 + 0x8, 1, MemoryType.float);
+      this.processHandle.write(glowManager + glowIndex * 0x38 + 0x4, 1 - player.m_iHealth / 100, MemoryType.float);
+      this.processHandle.write(glowManager + glowIndex * 0x38 + 0x8, 0 + player.m_iHealth / 100, MemoryType.float);
       this.processHandle.write(glowManager + glowIndex * 0x38 + 0xc, 0, MemoryType.float);
       this.processHandle.write(glowManager + glowIndex * 0x38 + 0x10, 1, MemoryType.float);
       this.processHandle.write(glowManager + glowIndex * 0x38 + 0x24, true, MemoryType.bool);
@@ -156,7 +145,7 @@ export default class Hack extends Runnable {
     players.enemy.forEach((player) => {
       player.write(this.offsets.netvars.m_bSpotted, 1, MemoryType.int);
     });
-  }, 1000);
+  }, 500);
 
   triggerbot = throttle(() => {
     const self = this.getSelf();
