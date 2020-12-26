@@ -1,5 +1,6 @@
 import * as aks from 'asynckeystate';
 import { memoize, throttle } from 'lodash';
+import { getActiveProcessName } from 'windows-active-process';
 import OffsetHandle from './OffsetHandle';
 import { Offsets } from './offsets';
 import Player from './Player';
@@ -108,7 +109,7 @@ export default class Hack extends Runnable {
   }, 100);
 
   tick() {
-    if (this.processHandle.processState !== 'attached') {
+    if (this.processHandle.processState !== 'attached' || getActiveProcessName()?.split('\\').pop() !== 'csgo.exe') {
       super.tick();
       return;
     }

@@ -15,7 +15,8 @@
   "pkg": {
     "assets": [
       "dist\\build\\Release\\memoryjs.node",
-      "dist\\build\\Release\\asynckeystate.node"
+      "dist\\build\\Release\\asynckeystate.node",
+      "dist\\build\\Release\\processname.node"
     ]
   },
   "author": "",
@@ -24,7 +25,8 @@
     "asynckeystate": "0.0.5",
     "axios": "^0.21.1",
     "lodash": "^4.17.20",
-    "memoryjs": "github:matteofumagalli1275/memoryjs#node13"
+    "memoryjs": "github:matteofumagalli1275/memoryjs#node13",
+    "windows-active-process": "^1.1.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.166",
