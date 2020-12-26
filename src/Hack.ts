@@ -179,7 +179,7 @@ export default class Hack extends Runnable {
 
     const weapon = new Weapon(this, self.m_hActiveWeapon);
 
-    if (playerFlag !== 0 && weapon.m_iItemDefinitionIndex === 42) {
+    if (playerFlag !== 0 && weapon.m_iClip1 === -1) {
       this.jump();
     }
   }, 0);

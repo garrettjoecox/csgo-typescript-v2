@@ -21,7 +21,6 @@
     ]
   },
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "asynckeystate": "0.0.5",
     "axios": "^0.21.1",
