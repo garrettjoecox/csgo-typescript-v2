@@ -1,5 +1,6 @@
 declare module 'memoryjs' {
   type Process = {
+    szExeFile: string;
     th32ProcessID: number;
     modBaseAddr: number;
     handle: number;
@@ -30,6 +31,7 @@ declare module 'memoryjs' {
     | 'vec4'
     | 'vector4';
 
+  export function getProcesses(): Process[];
   export function openProcess(processName: string): Process;
   export function findModule(moduleName: string, processId: number): Module;
 

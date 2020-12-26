@@ -2,22 +2,24 @@ import * as aks from 'asynckeystate';
 import { memoize, throttle } from 'lodash';
 import OffsetHandle from './OffsetHandle';
 import { Offsets } from './offsets';
+import Player from './Player';
 import ProcessHandle, { MemoryType } from './ProcessHandle';
 import Runnable from './Runnable';
+import Weapon from './Weapon';
 import { weapons } from './weapons';
 
 export default class Hack extends Runnable {
-  private offsets: Offsets;
+  public offsets: Offsets;
 
-  private config: {};
+  public config: {};
 
-  private processHandle: ProcessHandle;
+  public processHandle: ProcessHandle;
 
-  private clientHandle?: OffsetHandle;
+  public clientHandle?: OffsetHandle;
 
-  private engineHandle?: OffsetHandle;
+  public engineHandle?: OffsetHandle;
 
-  private clientStateHandle?: OffsetHandle;
+  public clientStateHandle?: OffsetHandle;
 
   protected tickRate: number = 0;
 
@@ -55,8 +57,8 @@ export default class Hack extends Runnable {
     }, 5000);
 
     const players: {
-      enemy: OffsetHandle[];
-      friendly: OffsetHandle[];
+      enemy: Player[];
+      friendly: Player[];
     } = {
       enemy: [],
       friendly: [],
@@ -64,23 +66,14 @@ export default class Hack extends Runnable {
 
     const selfIndex = this.clientStateHandle.read(this.offsets.signatures.dwClientState_GetLocalPlayer, MemoryType.int);
     const maxEntity = this.clientStateHandle.read(this.offsets.signatures.dwClientState_MaxPlayer, MemoryType.int);
-    for (let i = 0; i < maxEntity; i += 1) {
-      const dwEntity: number = this.clientHandle.read(
-        this.offsets.signatures.dwEntityList + 0x10 * i,
-        MemoryType.dword
-      );
-      const entity = new OffsetHandle(this.processHandle, dwEntity);
-      if (i === selfIndex) continue;
+    for (let entityIndex = 0; entityIndex < maxEntity; entityIndex += 1) {
+      const entity = new Player(this, entityIndex);
+      if (entityIndex === selfIndex) continue;
 
-      const lifeState = entity.read(this.offsets.netvars.m_lifeState, MemoryType.int);
-      const team = entity.read(this.offsets.netvars.m_iTeamNum, MemoryType.int);
-      const dormant = entity.read(this.offsets.signatures.m_bDormant, MemoryType.dword);
-      const health = entity.read(this.offsets.netvars.m_iHealth, MemoryType.int);
-
-      if (lifeState === 0 && dormant === 0 && health > 0) {
-        if (team === 2) {
+      if (entity.m_lifeState === 0 && entity.m_bDormant === 0 && entity.m_iHealth > 0) {
+        if (entity.m_iTeamNum === 2) {
           players.friendly.push(entity);
-        } else if (team === 3) {
+        } else if (entity.m_iTeamNum === 3) {
           players.enemy.push(entity);
         }
       }
@@ -97,12 +90,8 @@ export default class Hack extends Runnable {
     }, 5000);
 
     const selfIndex = this.clientStateHandle.read(this.offsets.signatures.dwClientState_GetLocalPlayer, MemoryType.int);
-    const dwEntity: number = this.clientHandle.read(
-      this.offsets.signatures.dwEntityList + 0x10 * selfIndex,
-      MemoryType.dword
-    );
 
-    return new OffsetHandle(this.processHandle, dwEntity);
+    return new Player(this, selfIndex);
   };
 
   getSelf = memoize(this.getSelfInternal);
@@ -149,7 +138,7 @@ export default class Hack extends Runnable {
 
     const glowManager = this.clientHandle.read(this.offsets.signatures.dwGlowObjectManager, MemoryType.int);
     players.enemy.forEach((player) => {
-      const glowIndex = player.read(this.offsets.netvars.m_iGlowIndex, MemoryType.int);
+      const glowIndex = player.m_iGlowIndex;
 
       this.processHandle.write(glowManager + glowIndex * 0x38 + 0x4, 0, MemoryType.float);
       this.processHandle.write(glowManager + glowIndex * 0x38 + 0x8, 1, MemoryType.float);
@@ -170,36 +159,21 @@ export default class Hack extends Runnable {
 
   triggerbot = throttle(() => {
     const self = this.getSelf();
-    const crosshairEntityId = self.read(this.offsets.netvars.m_iCrosshairId, MemoryType.int);
-    const maxEntity = this.clientStateHandle.read(this.offsets.signatures.dwClientState_MaxPlayer, MemoryType.int);
-    if (!crosshairEntityId || crosshairEntityId > maxEntity) return;
+    const crosshairEntity = new Player(this, self.m_iCrosshairId);
 
-    const dwEntity: number = this.clientHandle.read(
-      this.offsets.signatures.dwEntityList + 0x10 * (crosshairEntityId - 1),
-      MemoryType.dword
-    );
-    const crosshairEntity = new OffsetHandle(this.processHandle, dwEntity);
-    const lifeState = crosshairEntity.read(this.offsets.netvars.m_lifeState, MemoryType.int);
-    const team = crosshairEntity.read(this.offsets.netvars.m_iTeamNum, MemoryType.int);
-    const health = crosshairEntity.read(this.offsets.netvars.m_iHealth, MemoryType.int);
+    if (crosshairEntity.m_lifeState === 0 && crosshairEntity.m_iTeamNum === 3 && crosshairEntity.m_iHealth > 0) {
+      const weapon = new Weapon(this, self.m_hActiveWeapon);
+      const currentPenalty = weapon.m_fAccuracyPenalty;
+      const weaponId = weapon.m_iItemDefinitionIndex;
 
-    if (lifeState === 0 && team === 3 && health > 0) {
-      // eslint-disable-next-line no-bitwise
-      const weaponIndex = (self.read(this.offsets.netvars.m_hActiveWeapon, MemoryType.int) - 1) & 65535;
-      const weaponOffset = this.clientHandle.read(
-        this.offsets.signatures.dwEntityList + 0x10 * weaponIndex,
-        MemoryType.int
-      );
-      const weapon = new OffsetHandle(this.processHandle, weaponOffset);
-      const clip = weapon.read(this.offsets.netvars.m_iClip1, MemoryType.int);
-      const currentPenalty = weapon.read(this.offsets.netvars.m_fAccuracyPenalty, MemoryType.float) * 1000;
-      const weaponId = weapon.read(this.offsets.netvars.m_iItemDefinitionIndex, MemoryType.short);
-
-      if (clip < 1) return;
+      if (weapon.m_iClip1 < 1) return;
 
       if (weapons[weaponId]) {
         const basePenalty = weapons[weaponId].inaccuracyAlt;
-        if (currentPenalty <= basePenalty * 1.7) {
+        if (currentPenalty <= basePenalty * 1.2) {
+          this.attack();
+          setTimeout(() => this.attack(), 100);
+        } else if (currentPenalty <= basePenalty * 1.5) {
           this.attack();
         }
       } else {
@@ -212,16 +186,10 @@ export default class Hack extends Runnable {
     const self = this.getSelf();
     // eslint-disable-next-line no-bitwise
     const playerFlag = self.read(this.offsets.netvars.m_fFlags, MemoryType.int) & 1;
-    // eslint-disable-next-line no-bitwise
-    const weaponIndex = (self.read(this.offsets.netvars.m_hActiveWeapon, MemoryType.int) - 1) & 65535;
-    const weaponOffset = this.clientHandle.read(
-      this.offsets.signatures.dwEntityList + 0x10 * weaponIndex,
-      MemoryType.int
-    );
-    const weapon = new OffsetHandle(this.processHandle, weaponOffset);
-    const weaponId = weapon.read(this.offsets.netvars.m_iItemDefinitionIndex, MemoryType.short);
 
-    if (playerFlag !== 0 && weaponId === 42) {
+    const weapon = new Weapon(this, self.m_hActiveWeapon);
+
+    if (playerFlag !== 0 && weapon.m_iItemDefinitionIndex === 42) {
       this.jump();
     }
   }, 0);
