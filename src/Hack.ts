@@ -151,7 +151,11 @@ export default class Hack extends Runnable {
     const self = this.getSelf();
     const crosshairEntity = new Player(this, self.m_iCrosshairId);
 
-    if (crosshairEntity.m_lifeState === 0 && crosshairEntity.m_iTeamNum === 3 && crosshairEntity.m_iHealth > 0) {
+    if (
+      crosshairEntity.m_lifeState === 0 &&
+      crosshairEntity.m_iTeamNum !== self.m_iTeamNum &&
+      crosshairEntity.m_iHealth > 0
+    ) {
       const weapon = new Weapon(this, self.m_hActiveWeapon);
       const currentPenalty = weapon.m_fAccuracyPenalty;
       const weaponId = weapon.m_iItemDefinitionIndex;
